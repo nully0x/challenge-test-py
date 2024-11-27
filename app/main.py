@@ -17,7 +17,7 @@ class TransactionInput(TypedDict):
     vout: int
     scriptSig: str
     sequence: int
-    scriptPubKey: Optional[str]
+    scriptPubKey: str
 
 class TransactionOutput(TypedDict):
     address: str
@@ -56,27 +56,30 @@ def create_transaction(
 
     total_input_value = 0
     for utxo in utxos:
-        if not utxo.get("scriptPubKey") and utxo.get("address"):
-            utxo["scriptPubKey"] = create_script_pub_key(utxo["address"])
+        # Calculate total input value
+        total_input_value += utxo["value"]
 
+        # Create input with empty scriptPubKey
         transaction["inputs"].append({
             "txid": utxo["txid"],
             "vout": utxo["vout"],
             "scriptSig": "",
             "sequence": 0xffffffff,
-            "scriptPubKey": utxo["scriptPubKey"]
+            "scriptPubKey": "" # Added required field
         })
-        total_input_value += utxo["value"]
 
+    # Check if we have enough funds
     fee = calculate_fee(transaction)
     if total_input_value < amount + fee:
         raise ValueError("Insufficient funds")
 
+    # Add the target output
     transaction["outputs"].append({
         "address": target_address,
         "value": amount
     })
 
+    # Add change output if necessary
     change = total_input_value - amount - fee
     if change > 0:
         transaction["outputs"].append({
@@ -84,13 +87,13 @@ def create_transaction(
             "value": change
         })
 
+    # Sign each input
     signing_key = SigningKey.from_string(bytes.fromhex(private_key), curve=SECP256k1)
     public_key = signing_key.get_verifying_key().to_string().hex()
 
-    for i, input_tx in enumerate(transaction["inputs"]):
+    for i in range(len(transaction["inputs"])):
         signature = generate_signature(private_key, transaction, i)
-        input_tx["scriptSig"] = create_script_sig(signature, public_key)
-        input_tx.pop("scriptPubKey", None)
+        transaction["inputs"][i]["scriptSig"] = create_script_sig(signature, public_key)
 
     return serialize_transaction(transaction)
 
