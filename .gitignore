@@ -1,3 +1,4 @@
 .ropeproject
 solution.py
 .pytest_cache
+stage2_test.py
