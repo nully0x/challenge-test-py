@@ -18,16 +18,14 @@ def valid_utxo():
 
 @pytest.fixture
 def valid_private_key():
-    return "a1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    return "1e99423a4ed27608a15a2616c2b3b3a4a1a3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"
 
 @pytest.fixture
 def valid_target_address():
     return "2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF"
 
 # Tests
-def test_creates_valid_transaction_with_sufficient_funds(
-    valid_utxo, valid_target_address, valid_private_key
-):
+def test_creates_valid_transaction_with_sufficient_funds(valid_utxo, valid_target_address, valid_private_key):
     utxos = [valid_utxo]
     amount = 30000
 
@@ -37,9 +35,7 @@ def test_creates_valid_transaction_with_sufficient_funds(
     assert all(c in '0123456789abcdef' for c in result.lower())
     assert len(result) > 0
 
-def test_throws_error_with_insufficient_funds(
-    valid_target_address, valid_private_key
-):
+def test_throws_error_with_insufficient_funds(valid_target_address, valid_private_key):
     utxos = [{
         "txid": "7ea75da574ebff364f0f4cc9d0315b7d9523f7f38558918aff8570842cba74c9",
         "vout": 0,
@@ -50,9 +46,7 @@ def test_throws_error_with_insufficient_funds(
     with pytest.raises(ValueError, match="Insufficient funds"):
         create_transaction(utxos, valid_target_address, amount, valid_private_key)
 
-def test_validates_all_required_parameters(
-    valid_utxo, valid_target_address, valid_private_key
-):
+def test_validates_all_required_parameters(valid_utxo, valid_target_address, valid_private_key):
     utxos = [valid_utxo]
     amount = 30000
 
@@ -71,13 +65,10 @@ def test_validates_all_required_parameters(
     # Test invalid amount
     with pytest.raises(ValueError, match="Invalid amount"):
         create_transaction(utxos, valid_target_address, 0, valid_private_key)
-
     with pytest.raises(ValueError, match="Invalid amount"):
         create_transaction(utxos, valid_target_address, -1000, valid_private_key)
 
-def test_handles_multiple_utxos_correctly(
-    valid_target_address, valid_private_key
-):
+def test_handles_multiple_utxos_correctly(valid_target_address, valid_private_key):
     utxos = [
         {
             "txid": "7ea75da574ebff364f0f4cc9d0315b7d9523f7f38558918aff8570842cba74c9",
@@ -97,9 +88,7 @@ def test_handles_multiple_utxos_correctly(
     assert isinstance(result, str)
     assert all(c in '0123456789abcdef' for c in result.lower())
 
-def test_creates_correct_change_output(
-    valid_utxo, valid_target_address, valid_private_key
-):
+def test_creates_correct_change_output(valid_utxo, valid_target_address, valid_private_key):
     utxos = [valid_utxo]
     amount = 30000
 
@@ -107,9 +96,7 @@ def test_creates_correct_change_output(
     assert result is not None
     assert len(result) > 200  # Approximate length check
 
-def test_creates_transaction_with_correct_format(
-    valid_utxo, valid_target_address, valid_private_key
-):
+def test_creates_transaction_with_correct_format(valid_utxo, valid_target_address, valid_private_key):
     utxos = [valid_utxo]
     amount = 30000
 
